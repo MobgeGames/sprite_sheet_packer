@@ -158,12 +158,12 @@ Editor.prototype.packWithMethod = function (methodId) {
             break;
         case 1:
             vfs.sort(function (a, b) {
-                return -a.size.w * a.drawScale + b.size.w * b.drawScale;
+                return -a.size.w * a.reelScale + b.size.w * b.reelScale;
             });
             break;
         case 2:
             vfs.sort(function (a, b) {
-                return -a.size.h * a.drawScale + b.size.h * b.drawScale;
+                return -a.size.h * a.reelScale + b.size.h * b.reelScale;
             });
             break;
     }
@@ -194,8 +194,8 @@ Editor.prototype.packWithMethod = function (methodId) {
             }
         }
         var globalScale = getSettings().scale;
-        vfSize.w *= vf.drawScale;
-        vfSize.h *= vf.drawScale;
+        vfSize.w *= vf.reelScale;
+        vfSize.h *= vf.reelScale;
         vfSize.w += this.padding;
         vfSize.h += this.padding;
         for (var j = rects.length - 1; j >= 0; j--) {
@@ -253,7 +253,7 @@ Editor.prototype.exportSheet = function (onresult) {
     for (var i = 0; i < vfs.length; i++) {
         // paint frame into canvas
         var vf = vfs[i];
-        var scl = vf.drawScale;
+        var scl = vf.reelScale;
         var pos = vf.position;
         pos.x = Math.round(pos.x);
         pos.y = Math.round(pos.y);
@@ -422,7 +422,7 @@ ItemList.prototype.addFrameDirect = function (visualFrame) {
         if (visualFrame.name === vfs[i].name) {
             switch (getSettings().getImportSetting()) {
                 case 'keep_size':
-                    var osize = vfs[i].drawScale * vfs[i].size.w;
+                    var osize = vfs[i].reelScale * vfs[i].size.w;
                     visualFrame.scale = osize / (getSettings().scale * visualFrame.size.w);
                     break;
                 case 'keep_scale':
@@ -470,7 +470,7 @@ ItemList.prototype.updatePropertiesPanel = function () {
 
     var sop = this.itemList.get(0).selectedOptions;
     if (sop.length == 1) {
-        getPropertiesPanel().editObject(this.editor.visualFrames[sop[0].index], ['name', 'scale', 'drawScale', 'margin', 'export']);
+        getPropertiesPanel().editObject(this.editor.visualFrames[sop[0].index], ['name', 'scale', 'reelScale', 'margin', 'export']);
     }
     else {
         getPropertiesPanel().clear();
@@ -544,10 +544,7 @@ ItemList.prototype.loadProject = function (image, projectJson) {
 
         this.addFrameDirect(v);
     }
-
     //this.setDirty();
-
-
 }
 
 
@@ -560,7 +557,7 @@ function PropertyPanel(propertyPanelTable, inputClassName) {
     this.inputClassName = inputClassName;
 }
 
-PropertyPanel.prototype.addInput = function (name, obj, fn) {
+PropertyPanel.prototype.addInput = function (name, obj, fn, isLabel = false) {
     var tr = document.createElement('tr');
     var b = this.body.get(0);
     b.appendChild(tr);
@@ -570,7 +567,7 @@ PropertyPanel.prototype.addInput = function (name, obj, fn) {
 
     td = document.createElement('td');
     var div = document.createElement('div');
-    var input = document.createElement('input');
+    var input = document.createElement(isLabel ? 'div' : 'input');
     input.className = this.inputClassName;
     div.appendChild(input);
     td.appendChild(div);
@@ -589,11 +586,15 @@ PropertyPanel.prototype.editObject = function (obj, fieldNameArray) {
     for (var i = 0; i < fieldNameArray.length; i++) {
         var fn = fieldNameArray[i];
         var val = obj[fn];
+        var displayName = fn;
+        if(val.displayName !== undefined) {
+            displayName = val.displayName;
+        }
 
         //console.log(typeof val);
         switch (typeof val) {
             case 'number':
-                var input = this.addInput(fn, obj, fn);
+                var input = this.addInput(displayName, obj, fn);
                 input.type = 'number';
                 input.step = 0.1;
                 input.value = val;
@@ -604,7 +605,7 @@ PropertyPanel.prototype.editObject = function (obj, fieldNameArray) {
                 });
                 break;
             case 'string':
-                var input = this.addInput(fn, obj, fn);
+                var input = this.addInput(displayName, obj, fn);
                 input.type = 'text';
                 input.value = val;
                 input.onchange = (function () {
@@ -613,12 +614,16 @@ PropertyPanel.prototype.editObject = function (obj, fieldNameArray) {
                 });
                 break;
             case 'function':
-                var input = this.addInput(fn, obj, fn);
+                var input = this.addInput(displayName, obj, fn);
                 input.type = 'button';
                 input.value = fn;
                 input.onclick = (function () {
                     this.obj[this.fn]();
                 });
+                break;
+            default:
+                var input = this.addInput(displayName, obj, fn, true);
+                input.innerHTML = val.value;
                 break;
         }
     }
@@ -744,7 +749,7 @@ VisualFrameInfo.prototype._init = function () {
         
         this.canvas.style.transform =
             'translate(' + position.x + 'px, ' + position.y + 'px)' + ' ' +
-            'scale(' + this.drawScale + ')';
+            'scale(' + this.reelScale + ')';
     };
     Object.defineProperty(this, "position", {
         get: function () {
@@ -758,17 +763,20 @@ VisualFrameInfo.prototype._init = function () {
             this._refreshTransform();
         }
     });
-    Object.defineProperty(this, "drawScale", {
+    Object.defineProperty(this, "reelScale", {
         get: function(){
             var scl = (scale * getSettings().scale);
             if (!isNaN(this.canvasInternalScale)) {
                 scl /= this.canvasInternalScale;
             }
-            return scl;
+            var obj = {};
+            obj.value = "" + scl;
+            obj.displayName = "Reel Scale";
+            return obj;
         },
         set: function () {
             
-        }
+        },
     });
     Object.defineProperty(this, "scale", {
         get: function () {
@@ -794,7 +802,7 @@ VisualFrameInfo.prototype._init = function () {
     Object.defineProperty(this, "area", {
         get: function () {
             var size = this.size;
-            var scale = this.drawScale;
+            var scale = this.reelScale;
             return size.w * size.h * scale * scale;
         }
     });

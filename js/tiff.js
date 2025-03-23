@@ -561,7 +561,7 @@ TIFFParser.prototype = {
         //		console.log( strips );
 
         if (canvas.getContext) {
-            var ctx = this.canvas.getContext("2d");
+            var ctx = this.canvas.getContext("2d", { willReadFrequently: true });
             var imageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
             var pixels = imageData.data;
             var stride = this.canvas.width * 4;
