@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Sprite Editor</title>
+    <link rel="stylesheet" type="text/css" href="css/general.css" />
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="js/jquery-ui.js"></script>
+    <!--<script src="http://layout.jquery-dev.com/lib/js/jquery.layout-latest.js"></script>-->
+    
+    <script src="js/jquery.layout.min.js"></script>
+    <script src="js/tiff.js"></script>
+    <script src="js/pica.min.js"></script>
+    <script src="js/canvas-to-blob.min.js"></script>
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+
+    <script src="js/general.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            $('#menu').layout({
+
+                //	reference only - these options are NOT required because 'true' is the default
+                closable: true	// pane can open & close
+                , resizable: true	// when open, pane can be resized
+                , slidable: true	// when closed, pane can 'slide' open over other panes - closes on mouse-out
+                , livePaneResizing: true
+                , applyDefaultStyles: true
+
+                , north: {
+                    resizable: false,
+                    size: 60,
+                }
+
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">
+            File
+        </button>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+            <li><button >Save</button></li>
+            <li><button >Load</button></li>
+            <li class="divider"></li>
+            <li><button onclick="exportAction()">Export</button></li>
+            <li><button>Import</button></li>
+            
+        </ul>
+      
+        <!--<button class="btn" type="button" id="bleed" onclick="bleedAction()">bleed</button>-->
+        
+    </div>
+    
+    <div id="menu" style="bottom: 0px;top: 35px;left: 0px;right: 0px;position: absolute;">
+        
+
+        <div class="ui-layout-center">
+            <div style="position:relative; height:100%">
+                <div id="editorParent">
+                    <div id="editor" class="transparentBackground" ondrop="fileDropHandle(event)" ondragover="allowFileDrop(event)"></div>
+                </div>
+                <div id="editor_bottom">
+                    <input class="st_scale_val" id="st_scale_val" value="1" type="number" step="0.1" min="0.1" max="2" oninput="st_scale.value=value"
+                           style="width:50px; height:100%; position:absolute; margin:5px">
+                    <input class="st_scale_val" id="st_scale" value="1" type="range" step="0.001" min="0.1" max="2" oninput="st_scale_val.value = value"
+                           style="width:200px; height:100%; left:65px; padding:0px; position:absolute">
+                </div>
+            </div>
+        </div>
+
+        <div class="ui-layout-west">
+
+            <table>
+                <tr>
+                    <td>
+                        Width
+                    </td>
+                    <td>
+                        <input id="st_width" value="1024" type="number" min="64" max="4096">
+
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        Height
+                    </td>
+                    <td>
+                        <input id="st_height" value="1024" type="number" min="64" max="4096">
+
+                    </td>
+
+                </tr>
+                <tr>
+                    <td>
+                        Padding
+                    </td>
+                    <td>
+                        <input id="st_padding" value="1" type="number" min="0" max="16">
+
+                    </td>
+
+                </tr>
+                <tr>
+                    <td>
+                        Scale
+                    </td>
+                    <td>
+                        <input id="st_item_scale" value="1" step="0.1" type="number" min="0.1" max="2">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Import options
+                    </td>
+                    <td>
+                        <select id="import_settings">
+                            <option value="keep_scale">Keep scale if replace</option>
+                            <option value="keep_size">Keep size if replace</option>
+                        </select>
+                    </td>
+                </tr>
+                
+            </table>
+
+            <div id="properties_panel">
+
+                <table id="properties_panel_table">
+                    <tbody></tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="ui-layout-east">
+            <table>
+                <tr>
+                    <td>
+                        <select id="items_list" multiple />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+
+	<div id="save_dialog" class="popup" >
+		<div class="popup-content">
+
+			<a id="a_save_sheet" class="popup-button" role="button" download="sprite sheet.png">save image</a>
+			<a id="a_save_coordinates" class="popup-button" role="button" download="sprite sheet.json">save coordinates</a>
+				<button onclick="closePopup()" class="popup-button-close">X</button>
+		</div>
+	</div>
+
+</body>
+</html>
+
+
+

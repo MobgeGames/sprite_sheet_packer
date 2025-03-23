@@ -1,0 +1,120 @@
+﻿
+#items_list {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    overflow: auto;
+    bottom: 0px;
+    width: 100%;
+}
+#editor {
+    width: 350px;
+    height: 70px;
+    border: 1px solid #aaaaaa;
+    position: relative;
+}
+#editor .ui-selecting {
+    background:  rgba(255, 108, 108, 0.19);
+    color: white;
+}
+#editor .ui-selected {
+    background: rgba(255, 108, 108, 0.39);
+    color: white;
+}
+#editor_bottom {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 30px;
+    padding: 0px;
+    box-sizing:border-box;
+}
+#editorParent{
+    left:0px;
+    right:0px;
+    top:0px;
+    bottom:30px;
+    position:absolute;
+    overflow:auto;
+}
+#properties_panel {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    height: 300px;
+    overflow: auto;
+    padding: 8px;
+}
+#properties_panel_table {
+    position: relative;
+    width: 100%;
+    background-color: antiquewhite;
+}
+.toolbox{
+    background-color: mediumturquoise;
+}
+.property_input{
+    position:relative;
+    width:100%;
+    height:100%;
+}
+.settings_table {
+    background-color: chartreuse;
+}
+
+.transparentBackground {
+    background-image: url(../res/Transparent.png);
+    background-repeat: repeat;
+}
+
+.visualFrame {
+    position: absolute;
+    transform-origin: left top;
+}
+
+.popup {
+	display: none;
+	position: fixed;
+	z-index: 5;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4);
+}
+.popup-content {
+	margin:auto;
+	margin-top: 100px;
+	width: 600px;
+	padding: 20px;
+	border: 1px solid #888;
+	background-color: #fefefe;
+}
+
+.popup-button  {
+	background-color: #4CA0AF; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+  
+}
+
+.popup-button-close  {
+	background-color: #4CA0AF; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+	float:right;
+  
+}
