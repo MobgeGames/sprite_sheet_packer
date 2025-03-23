@@ -489,7 +489,7 @@ ItemList.prototype.removeSelecteds = function () {
         }
     }
 
-    getPropertiesPanel().clear();
+    getPropertiesPanel().visibility = false;
 }
 
 ItemList.prototype.setDirty = function () {
