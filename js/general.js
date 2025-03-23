@@ -466,16 +466,6 @@ ItemList.prototype.refreshSelectedVisuals = function () {
     this.updatePropertiesPanel();
 }
 
-ItemList.prototype.updatePropertiesPanel = function () {
-
-    var sop = this.itemList.get(0).selectedOptions;
-    if (sop.length == 1) {
-        getPropertiesPanel().editObject(this.editor.visualFrames[sop[0].index], ['name', 'scale', 'reelScale', 'margin', 'export']);
-    }
-    else {
-        getPropertiesPanel().clear();
-    }
-}
 
 ItemList.prototype.removeSelecteds = function () {
     var il = this;
@@ -551,89 +541,138 @@ ItemList.prototype.loadProject = function (image, projectJson) {
 
 
 
-function PropertyPanel(propertyPanelTable, inputClassName) {
-    this.table = propertyPanelTable;
-    this.body = this.table.children('tbody');
-    this.inputClassName = inputClassName;
-}
+ItemList.prototype.updatePropertiesPanel = function () {
 
-PropertyPanel.prototype.addInput = function (name, obj, fn, isLabel = false) {
-    var tr = document.createElement('tr');
-    var b = this.body.get(0);
-    b.appendChild(tr);
-    var td = document.createElement('td');
-    td.innerHTML = (name);
-    tr.appendChild(td);
-
-    td = document.createElement('td');
-    var div = document.createElement('div');
-    var input = document.createElement(isLabel ? 'div' : 'input');
-    input.className = this.inputClassName;
-    div.appendChild(input);
-    td.appendChild(div);
-
-    tr.appendChild(td);
-
-    input.obj = obj;
-    input.fn = fn;
-
-    return input;
-
-}
-
-PropertyPanel.prototype.editObject = function (obj, fieldNameArray) {
-    this.clear();
-    for (var i = 0; i < fieldNameArray.length; i++) {
-        var fn = fieldNameArray[i];
-        var val = obj[fn];
-        var displayName = fn;
-        if(val.displayName !== undefined) {
-            displayName = val.displayName;
-        }
-
-        //console.log(typeof val);
-        switch (typeof val) {
-            case 'number':
-                var input = this.addInput(displayName, obj, fn);
-                input.type = 'number';
-                input.step = 0.1;
-                input.value = val;
-                input.oninput = (function () {
-                    this.obj[this.fn] = parseFloat(this.value);
-                    this.value = this.obj[this.fn];
-                    getItemList().setDirty();
-                });
-                break;
-            case 'string':
-                var input = this.addInput(displayName, obj, fn);
-                input.type = 'text';
-                input.value = val;
-                input.onchange = (function () {
-                    this.obj[this.fn] = (this.value);
-                    this.value = this.obj[this.fn];
-                });
-                break;
-            case 'function':
-                var input = this.addInput(displayName, obj, fn);
-                input.type = 'button';
-                input.value = fn;
-                input.onclick = (function () {
-                    this.obj[this.fn]();
-                });
-                break;
-            default:
-                var input = this.addInput(displayName, obj, fn, true);
-                input.innerHTML = val.value;
-                break;
-        }
+    var sop = this.itemList.get(0).selectedOptions;
+    if (sop.length > 0) {
+        getPropertiesPanel().editObject(this);
+    }
+    else {
+        getPropertiesPanel().visibility = false;
     }
 }
-
-PropertyPanel.prototype.clear = function () {
-    this.body.children().remove();
+ItemList.prototype.getSelectedValue = function (fieldName) {
+    var sop = this.itemList.get(0).selectedOptions;
+    var r = null;
+    for(var i = 0; i < sop.length; i++) {
+        var frame = this.editor.visualFrames[sop[i].index];
+        var val = frame[fieldName];
+        if(r === null) {
+            r = val;
+        }
+        else {
+            if(r !== val) {
+                r = "-";
+                break;
+            }
+        }
+    }
+    return r;
+}
+ItemList.prototype.setSelectedValue = function (fieldName, value, onlyOne) {
+    var sop = this.itemList.get(0).selectedOptions;
+    if(onlyOne && sop.length != 1) {
+        return;
+    }
+    for(var i = 0; i < sop.length; i++) {
+        var frame = this.editor.visualFrames[sop[i].index];
+        frame[fieldName] = value;
+    }
+}
+ItemList.prototype.get = function(index) {
+    var sop = this.itemList.get(0).selectedOptions;
+    return this.editor.visualFrames[sop[index].index];
 }
 
 
+function PropertyPanel(propertyPanelTable, inputClassName) {
+    this.table = propertyPanelTable[0];
+    //this.body = this.table.children('tbody');
+    this.inputClassName = inputClassName;
+    
+    Object.defineProperty(this.table, "visibility", {
+        set: function(value) {
+            console.log("setting for: " + this.style);
+            this.style.visibility = value ? "visible" : "hidden";
+            console.log("set visibility: " + value);
+        }
+    });
+
+    this.table.visibility = false;
+}
+
+
+PropertyPanel.prototype.editObject = function (itemList) {
+    this.table.visibility = true;
+   
+    var ppName = $('#ppName')[0];
+    ppName.value = itemList.getSelectedValue('name');
+    ppName.oninput = (function() {
+        itemList.setSelectedValue('name', this.value, true);
+    });
+    var ppScale = $('#ppScale')[0];
+    ppScale.value = itemList.getSelectedValue('scale');
+    ppScale.placeholder = itemList.get(0).scale;
+    ppScale.oninput = (function() {
+        itemList.setSelectedValue('scale', parseFloat(this.value), false);
+        //obj.scale = parseFloat(this.value);
+        getItemList().setDirty();
+    });
+    $('#ppReelScale')[0].innerHTML = itemList.getSelectedValue('reelScale');
+    var ppMargin = $('#ppMargin')[0];
+    ppMargin.value = itemList.getSelectedValue('margin');
+    ppMargin.oninput = (function() {
+        itemList.setSelectedValue('margin', parseFloat(this.value), false);
+        //obj.margin = parseFloat(this.value);
+        getItemList().setDirty();
+    });
+    $('#ppExport')[0].onclick = (function() {
+        itemList.get(0).export();
+    });
+    // for (var i = 0; i < fieldNameArray.length; i++) {
+    //     var fn = fieldNameArray[i];
+    //     var val = obj[fn];
+    //     var displayName = fn;
+    //     if(val.displayName !== undefined) {
+    //         displayName = val.displayName;
+    //     }
+    //     //console.log(typeof val);
+    //     switch (typeof val) {
+    //         case 'number':
+    //             var input = this.addInput(displayName, obj, fn);
+    //             input.type = 'number';
+    //             input.step = 0.1;
+    //             input.value = val;
+    //             input.oninput = (function () {
+    //                 this.obj[this.fn] = parseFloat(this.value);
+    //                 this.value = this.obj[this.fn];
+    //                 getItemList().setDirty();
+    //             });
+    //             break;
+    //         case 'string':
+    //             var input = this.addInput(displayName, obj, fn);
+    //             input.type = 'text';
+    //             input.value = val;
+    //             input.onchange = (function () {
+    //                 this.obj[this.fn] = (this.value);
+    //                 this.value = this.obj[this.fn];
+    //             });
+    //             break;
+    //         case 'function':
+    //             var input = this.addInput(displayName, obj, fn);
+    //             input.type = 'button';
+    //             input.value = fn;
+    //             input.onclick = (function () {
+    //                 this.obj[this.fn]();
+    //             });
+    //             break;
+    //         default:
+    //             var input = this.addInput(displayName, obj, fn, true);
+    //             input.innerHTML = val.value;
+    //             break;
+    //     }
+    // }
+}
 
 
 
@@ -769,10 +808,7 @@ VisualFrameInfo.prototype._init = function () {
             if (!isNaN(this.canvasInternalScale)) {
                 scl /= this.canvasInternalScale;
             }
-            var obj = {};
-            obj.value = "" + scl;
-            obj.displayName = "Reel Scale";
-            return obj;
+            return scl;
         },
         set: function () {
             
