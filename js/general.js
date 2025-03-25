@@ -901,8 +901,9 @@ VisualFrameInfo.prototype.export = function () {
 
 
 
-function SaveDialog(parent, saveSheetLink, saveCoordinatesLink) {
+function SaveDialog(parent, saveSheetLink, saveCoordinatesLink, nameInput) {
     this.parent = parent;
+    this.nameInput = nameInput;
     this.saveSheetLink = saveSheetLink;
     this.saveCoordinatesLink = saveCoordinatesLink;
 
@@ -916,11 +917,12 @@ function SaveDialog(parent, saveSheetLink, saveCoordinatesLink) {
 
 SaveDialog.prototype.open = function (imageUrl, data_json, imageName) {
     this.visible = true;
-    this.saveSheetLink.attr('download', imageName);
+    this.saveSheetLink.attr('download', this.nameInput[0].value + ".png");
     this.saveSheetLink.attr('href', imageUrl);
     if (data_json) {
         this.saveCoordinatesLink.css('visibility', 'visible');
         var file = new Blob([data_json], { type: 'text/plain' });
+        this.saveCoordinatesLink.attr('download', this.nameInput[0].value + ".json");
         this.saveCoordinatesLink.attr('href', URL.createObjectURL(file));
     }
     else {
@@ -1332,7 +1334,7 @@ $(function () {
 
     var editor = new Editor(editorPanel);
     var propertiesPanel = new PropertyPanel($('#properties_panel_table'), 'property_input');
-    var saveDialog = new SaveDialog($('#save_dialog'), $('#a_save_sheet'), $('#a_save_coordinates'));
+    var saveDialog = new SaveDialog($('#save_dialog'), $('#a_save_sheet'), $('#a_save_coordinates'), $('#st_name'));
 
     itemList = new ItemList(editor, $("#items_list"));
 
